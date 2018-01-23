@@ -1,12 +1,60 @@
 ROS CHEAT SHEET
 
-In VirtualBox:
+After completing installation of your virtual machine in Introduction to ROS, Lesson 22.
+
+Starting VirtualBox:
+- open VirtualBox app
 - double click vm
 
 
-In VM:
+Getting started:
 - login (udacity-nd)
 - double click Terminator console or click ctrl-option-t on Mac, ctrl-alt-t on PC
+
+
+ROS CHEAT SHEET FILES
+Downloading files from github:
+cd ~
+git clone https://github.com/bertciccone/carndros.git
+
+
+MAKING THE VIRTUAL MACHINE SCREEN LARGER (VERIFIED ON MACOS)
+
+Follow these instructions to install Guest Additions to make your virtual machine screen larger and enable other convenience features.
+
+(Instructions from https://askubuntu.com/questions/792832/how-to-install-virtualbox-guest-additions-for-ubuntu-16-04/957118#957118)
+
+In Terminator (ctrl-T) after starting the virtual machine:
+
+wget https://www.virtualbox.org/download/testcase/VBoxGuestAdditions_5.2.7-120326.iso
+
+Then create an empty directory in /media and mount it there:
+
+sudo mkdir /media/iso
+
+sudo mount VBoxGuestAdditions_5.1.28.iso /media/iso
+
+Then go there and run the Linux installer:
+
+cd /media/iso
+
+sudo ./VBoxLinuxAdditions.run
+
+Reboot your guest OS:
+
+reboot
+
+
+ENABLING COPY/PASTE FROM HOST TO GUEST (VM)
+
+(After performing the steps above to install Guest Additions.)
+
+In VirtualBox Machine/Settings/General/Advanced menu:
+
+Click Shared Clipboard: Bidirectional
+Drag n Drop: Bidirectional
+
+(Use ctrl-c/ctrl-v in the Guest VM window, use cmd-c/cmd-v in the Mac Host.)
 
 
 TURTLESIM
@@ -46,7 +94,11 @@ rosmsg show geometry_msgs/Twist
 To see message definition using the nano editor:
 rosed geometry_msgs Twist.msg
 
+To exit nano editor:
+<ctrl-x>
+
 To echo messages:
+In Terminator window 4:
 rostopic echo /turtle1/cmd_vel
 
 
@@ -61,6 +113,7 @@ cd ~/catkin_ws
 catkin_make
 ls
 (see build devel src)
+
 
 CATKIN WORKSPACE COMMANDS
 
@@ -106,6 +159,7 @@ ls
 ls first_package
 (see CMakeLists.txt package.xml)
 
+
 IMPLEMENTING A ROS NODE
 
 Adding the scripts directory:
@@ -124,10 +178,6 @@ catkin_make
 source devel/setup.bash
 rosrun simple_arm hello
 
-Downloading files from github:
-cd ~/catkin_ws
-git clone https://github.com/bertciccone/carndros.git
-
 Running simple_mover:
 cd ~/catkin_ws
 roslaunch simple_arm robot_spawn.launch
@@ -136,6 +186,7 @@ In another Terminator window:
 cd ~/catkin_ws
 source devel/setup.bash
 rosrun simple_arm simple_mover
+
 
 IMPLEMENTING A SERVICE
 
@@ -180,7 +231,7 @@ generate_messages(
 )
 
 Modifying package.xml:
-cd ~/catkin_ws/src/simple_arms
+cd ~/catkin_ws/src/simple_arm
 nano package.xml
 
 (Add the missing lines; it should look like the following.)
@@ -204,6 +255,7 @@ cd ~/catkin_ws
 catkin_make
 cd devel/lib/python2.7/dist-packages
 ls
+env | grep PYTHONPATH
 (IS THIS RIGHT?)
 
 Creating the empty arm_mover node script:
@@ -214,6 +266,7 @@ chmod u+x arm_mover
 
 Launching the project with the new service:
 cd ~/catkin_ws/src/simple_arm/launch
+nano robot_spawn.launch
 
 (Modify robot_spawn.launch by adding this section.)
 
@@ -228,21 +281,35 @@ cd ~/catkin_ws/src/simple_arm/launch
   </node>
 
 Testing the new service:
-(Exit out of a previous roslaunch session first.)
+(Close all previous Terminator windows first.)
+In Terminator window 1:
 cd ~/catkin_ws
 catkin_make
 source devel/setup.bash
 roslaunch simple_arm robot_spawn.launch
 
 Verify that the node and service have indeed been launched:
+In Terminator window 2:
 rosnode list
 rosservice list
+
+Assuming that both the service (/arm_mover/safe_move) and the node (/arm_mover) show up as expected (If they've not, check the logs in the roscore console), you can now interact with the service using rosservice.
 
 Display the camera image stream:
 rqt_image_view /rgb_camera/image_raw
 (See open window with gray screen.)
-ctrl-c
 
-Rotate joint 1 and joint 2 by approximately pi/2 radians:
-$ rosservice call /arm_mover/safe_move "joint_1: 1.57
+Rotate joint 1 and joint 2 by approx. pi/2 radians (needs to be on two lines apparently):
+rosservice call /arm_mover/safe_move "joint_1: 1.57
 joint_2: 1.57"
+
+(error expected)
+
+Set the max_joint_2_angle parameter on the parameter server:
+rosparam set /arm_mover/max_joint_2_angle 1.57
+
+Try again (success, see the arm move and see the new view in the camera window):
+rosservice call /arm_mover/safe_move "joint_1: 1.57
+joint_2: 1.57"
+
+
