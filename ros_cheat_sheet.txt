@@ -303,7 +303,7 @@ Rotate joint 1 and joint 2 by approx. pi/2 radians (needs to be on two lines app
 rosservice call /arm_mover/safe_move "joint_1: 1.57
 joint_2: 1.57"
 
-(error expected)
+(An error is expected.)
 
 Set the max_joint_2_angle parameter on the parameter server:
 rosparam set /arm_mover/max_joint_2_angle 1.57
@@ -313,3 +313,79 @@ rosservice call /arm_mover/safe_move "joint_1: 1.57
 joint_2: 1.57"
 
 
+CREATE THE LOOK_AWAY NODE
+
+Creating the empty look_away node script:
+cd ~/catkin_ws
+cd src/simple_arm/scripts
+touch look_away
+chmod u+x look_away
+
+Update the launch file:
+cd ~/catkin_ws/src/simple_arm/launch
+nano robot_spawn.launch
+
+(Add the following code.)
+  <!-- The look away node -->
+  <node name="look_away" type="look_away" pkg="simple_arm"/>
+
+(Update arm_mover max_joint_2_angle to 1.57.)
+      max_joint_2_angle: 1.57
+
+Enter the look_away code:
+cd ~/catkin_ws/src/simple_arm/scripts
+nano look_away
+(Copy and paste look_away code.)
+<ctrl-x>
+y
+<enter>
+
+Launch and interact with simple_arm:
+In Terminator window 1:
+cd ~/catkin_ws
+catkin_make
+source devel/setup.bash
+roslaunch simple_arm robot_spawn.launch
+
+To see the camera view:
+In Terminator window 2:
+rqt_image_view /rgb_camera/image_raw
+
+In Terminator window 3:
+cd ~/catkin_ws
+source devel/setup.bash
+rosservice call /arm_mover/safe_move "joint_1: 0 
+joint_2: 0"
+(See the view changing in the image window.)
+
+
+LOGGING
+
+To see logs:
+cd ~/.ros/log
+
+or
+
+(If roscore is running.)
+roscd log
+
+To see /rosout messages in realtime (may be too many messages):
+rostopic echo /rosout
+
+To see only certain messages:
+rostopic echo /rosout | grep insert_search_expression_here
+
+or, to write to a file:
+rostopic echo /rosout | grep insert_search_expression_here > path_to_output/output.txt
+
+To change logging level to debug, for example:
+rospy.init_node('my_node', log_level=rospy.DEBUG)
+
+Modifying display of messages sent to stdout and stderr:
+  <!-- The look away node -->
+  <node name="look_away" type="look_away" pkg="simple_arm" output="screen"/>
+
+Help
+http://wiki.ros.org/
+http://answers.ros.org/
+https://cse.sc.edu/~jokane/agitr/
